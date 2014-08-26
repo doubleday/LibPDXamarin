@@ -27,28 +27,55 @@ namespace LibPDTest
             }
             Forms.Init();
 
-            var audioController = new PdAudioController ();
+            var audioController = new PdAudioController();
             audioController.Active = true;
-            LibPD.OpenPatch (Path.Combine (NSBundle.MainBundle.ResourcePath, "test.pd"));
+            LibPD.OpenPatch(Path.Combine(NSBundle.MainBundle.ResourcePath, "test.pd"));
 
-            window = new UIWindow (UIScreen.MainScreen.Bounds);
+            window = new UIWindow(UIScreen.MainScreen.Bounds);
             
-            window.RootViewController = GetMainPage ().CreateViewController ();
-            window.MakeKeyAndVisible ();
+            window.RootViewController = GetMainPage().CreateViewController();
+            window.MakeKeyAndVisible();
             
             return true;
         }
 
         static Page GetMainPage()
         {    
+            var slider = new Slider
+            {
+                VerticalOptions = LayoutOptions.CenterAndExpand,
+                Minimum = 0,
+                Maximum = 440
+            };
+
+            slider.ValueChanged += (object sender, ValueChangedEventArgs e) =>
+            {                
+                LibPD.SendFloat("frq", (float)e.NewValue);                   
+            };
+
+            var trigger = new Button
+            {               
+                Text = "Trigger",
+                VerticalOptions = LayoutOptions.Center,
+            };
+
+            trigger.Clicked += (object sender, EventArgs e) =>
+            {
+                LibPD.SendBang("trigger");
+            };
+
             return new ContentPage
             { 
-                Content = new Label
+                Content = new StackLayout
                 {
-                    Text = "Hello, Forms!",
-                    VerticalOptions = LayoutOptions.CenterAndExpand,
-                    HorizontalOptions = LayoutOptions.CenterAndExpand,
-                },
+                    Spacing = 0,
+                    VerticalOptions = LayoutOptions.Center,
+                    Children =
+                    {
+                        trigger,                    
+                        slider,
+                    }
+                }
             };
         }
     }
